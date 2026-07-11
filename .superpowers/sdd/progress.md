@@ -34,7 +34,9 @@ machine has no torch/GPU). Tasks 7-8 are Kaggle execution = the user's step (not
   - Minor: no per-function docstrings stating the monotone-non-increasing precondition; no regression test for non-monotone/out-of-range `cum`.
 - Task 3: complete (commits 70a2547..3be00c8, review clean; py_compile OK, __init__ empty, soda/__init__ untouched). Controller-verified: all 6 DG domains have train+crossval split files matching DG_DOMAINS; APTOS 2921+741=3662 test count matches plan expectation. Kaggle smoke test deferred to user.
   - Minor (final review): no `assert target not in sources` guard; `open()` has no explicit encoding; `_read_split` raises bare FileNotFoundError with no context on a missing split file.
-- Task 4: pending
+- Task 4: complete (commits 3be00c8..6818fb4, review Approved; py_compile OK, isolation intact). Kaggle smoke test deferred to user.
+  - **PLAN-VS-REVIEW / KAGGLE-VERIFY (for user):** reviewer rated Important — `backbones.py:29-30` `target_modules=["qkv","proj"]` matches by endswith, so LoRA also attaches to timm's `patch_embed.proj` (Conv2d stem), not just attention projections — deviates from the plan's stated intent ("LoRA on attention projections"). Value is VERBATIM from approved plan (plan line 380); kept as-is. Practical impact minor (adds ~11k params, applies uniformly to DINOv2-ERM and DINOv2+CORN so does NOT confound the Phase-1 comparison), but for a clean "frozen+LoRA on attention" claim tighten to `["attn.qkv","attn.proj"]`. ACTION at Task-4 Kaggle smoke test: print `[n for n,_ in model.named_modules() if n.endswith(("qkv","proj"))]`; if `patch_embed.proj` appears, tighten target_modules. (See Kaggle handoff checklist.)
+  - Minor (final review): unused `import torch.nn as nn` (F401, from plan); no guard against `build_backbone("resnet50", lora=True)` (would freeze all + attach 0 adapters silently).
 - Task 5: pending
 - Task 6: pending
 - Task 7 (Kaggle gate): user-run, not executed here
