@@ -39,8 +39,10 @@ machine has no torch/GPU). Tasks 7-8 are Kaggle execution = the user's step (not
   - Minor (final review): unused `import torch.nn as nn` (F401, from plan); no guard against `build_backbone("resnet50", lora=True)` (would freeze all + attach 0 adapters silently).
 - Task 5: complete (commits 6818fb4..ca6419d, review Approved; py_compile OK, isolation intact). Reviewer web-verified coral_pytorch `corn_loss(logits, labels, num_classes)` signature and cumprod(sigmoid)+0.5 decode parity — both correct. Confirms Task-2 clip adjudication (cumprod-of-sigmoid is the sole, structurally-monotone producer of `cum`). Kaggle smoke test deferred to user.
   - Minor (final review): unused `import numpy as np` (F401); no per-function docstrings; `corn_decode_grade(cum)` relies on implicit threshold=0.5 default (correct but coupling invisible at call site); terse `raise ValueError(head_kind)`.
-- Task 6: code complete (commits ca6419d..121a819, py_compile OK, isolation intact, all imports/signatures/wiring verified correct by reviewer). Review verdict "Needs fixes" — but EVERY finding is PLAN-MANDATED (verbatim from approved plan), i.e. methodology gaps in the plan, not transcription defects. AWAITING USER DECISION before Task 7 gate.
-  Findings (all plan-mandated; the plan's engine.py/run.py have these as written):
+- Task 6: complete (commits ca6419d..121a819 initial, +15e3673 hardening fix; py_compile OK, isolation intact). Initial review "Needs fixes" on 4 PLAN-MANDATED methodology gaps; USER APPROVED fixing all four; fix commit 15e3673 re-reviewed -> Spec OK, quality Approved, no regressions. RESOLVED.
+  Fixes applied in 15e3673 (approved deviations from plan's literal code, matching its "best test AUC" intent): (1) best-val checkpoint snapshot+restore before test eval; (2) try/except ValueError->NaN guard around per-epoch macro_ovo_auc; (3) set_seed(random/numpy/torch/cuda) + `--seed` CLI flag; (4) `optim`+`seed` recorded in result JSON config; also explicit ValueError on unknown head_kind, and run.py docstring example fixed to the real SGD gate command.
+  Residual Minor (final review): all-val-NaN edge case reports val_best_auc=-1.0 (cosmetic; unreachable with 5 combined source domains); full state_dict CPU clone per val-improvement (runtime cost note, negligible).
+  Original findings (now resolved) were, all plan-mandated:
   - [Important, gate-relevant] No best-val checkpoint restore: loop tracks best_auc/`best` but `best` is dead code; final test eval uses the LAST-epoch model. Validation gate wording says "reproduce best test AUC ~0.75" (plan line 15) — intent-vs-code mismatch. DGDR 0.7497 reference may be best-val-checkpoint; last-epoch could miss ±0.02. FIX: snapshot state_dict on best val AUC, load before final test eval.
   - [Important] `macro_ovo_auc` in evaluate() has no try/except; raises ValueError if a val fold lacks a DR grade (roc_auc_score ovo, labels=range(5)) -> aborts a multi-hour Kaggle run; JSON only written at end. Risk low-moderate (val = 5 combined source crossval sets). Echoes Phase-0 Task-5 note. FIX: guard the per-epoch AUC call.
   - [Important] No seeding (no torch.manual_seed/np.random.seed) — run-to-run variance vs the tight ±0.02 gate tolerance. FIX: add --seed.
@@ -49,3 +51,13 @@ machine has no torch/GPU). Tasks 7-8 are Kaggle execution = the user's step (not
   - [Minor] engine.py:54 non-"softmax" head_kind silently -> CORNHead (argparse restricts CLI, but train_and_eval is public). val_every/wd not CLI-exposed (matches brief).
 - Task 7 (Kaggle gate): user-run, not executed here
 - Task 8 (Kaggle DG sweep): user-run, not executed here
+
+## Final whole-branch review (cfb6fbf..15e3673) — done inline (opus subagent hit session cap)
+Verdict: READY TO HAND OFF. No Critical/Important defects in the branch.
+- Architectural invariant verified: soda/train/ isolated (0-byte __init__), never imported by soda/__init__; pure-numpy core imports without torch; 17/17 local tests green; all 5 torch modules py_compile clean.
+- Cross-module contracts confirmed at branch tip: engine.py <-> soda.metrics (macro_ovo_auc, QWK, catastrophic, MAE, bootstrap_ci->(point,lo,hi)) and soda.ordinal_encoding all match real signatures. Split semantics validated vs real data (APTOS 2921+741=3662; all 6 DG domains have both split files). CORN decode parity with coral_pytorch confirmed.
+- MUST-FIX before Kaggle: none for Task 7 (ResNet gate, no LoRA). For Task 8 (DINOv2), decide the LoRA target_modules over-match at the Task-4 smoke test (tighten to ["attn.qkv","attn.proj"] if patch_embed.proj appears) — optional, doesn't confound the comparison.
+- Deferred to Phase 2 cleanup: unused imports (backbones torch.nn, heads numpy); guards/docstrings; ordinal_encoding clip hardening (Minor, unreachable); data.py encoding/FileNotFound context.
+
+## PHASE 1 STATUS: Tasks 1-6 COMPLETE (code + local verification + reviews). Tasks 7-8 = user's Kaggle step.
+Next action (user): run Kaggle Tasks 7 (ResNet-50 ERM validation gate on APTOS, expect AUC ~0.75) then 8 (DINOv2-ERM + DINOv2+CORN DG sweep). Kaggle handoff checklist + runbook prepared. See soda/kaggle/reproduce_baselines.md and results/ (to be filled by the Kaggle runs).
