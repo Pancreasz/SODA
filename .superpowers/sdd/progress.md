@@ -14,3 +14,24 @@ Plan: D:\fundus\docs\plans\2026-07-11-soda-phase0-harness-baselines.md
 - Task 6: complete (commit adds hardened regenerate_masks.py + preview_mask.py; findings recorded). Mask run: 11,357 masks, 0 failures, all 512x512, coverage 0.69-0.79 (healthy). DDR/EYEPACS skipped per convention.
 
 ALL PHASE 0 TASKS COMPLETE. Next: final whole-branch review, then finishing-a-development-branch.
+
+---
+
+# SODA Phase 1 — Progress Ledger
+
+Plan: D:\fundus\docs\plans\2026-07-11-soda-phase1-dinov2-corn.md
+Base commit at Phase 1 start: cfb6fbf (chore: phase 0 progress ledger)
+Executing via subagent-driven-development on branch `main` (continues Phase 0 convention).
+
+Scope note: Tasks 1-2 are local pure-numpy (pytest-verified here). Tasks 3-6 write
+Kaggle-only torch code (committed here; Kaggle smoke tests deferred to the user — this
+machine has no torch/GPU). Tasks 7-8 are Kaggle execution = the user's step (not run here).
+
+- Task 1: pending
+- Task 2: pending
+- Task 3: pending
+- Task 4: pending
+- Task 5: pending
+- Task 6: pending
+- Task 7 (Kaggle gate): user-run, not executed here
+- Task 8 (Kaggle DG sweep): user-run, not executed here
