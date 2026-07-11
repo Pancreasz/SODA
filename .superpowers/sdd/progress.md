@@ -27,9 +27,13 @@ Scope note: Tasks 1-2 are local pure-numpy (pytest-verified here). Tasks 3-6 wri
 Kaggle-only torch code (committed here; Kaggle smoke tests deferred to the user — this
 machine has no torch/GPU). Tasks 7-8 are Kaggle execution = the user's step (not run here).
 
-- Task 1: pending
-- Task 2: pending
-- Task 3: pending
+- Task 1: complete (commits cfb6fbf..4a97dd7, review clean)
+  - Minor (defer to final review): `dg_config.py:7` mutable default arg `domains=DG_DOMAINS` (read-only now, foot-gun if mutated); `domains=` override param path untested (matches brief tests).
+- Task 2: complete (commits 4a97dd7..70a2547, 17/17 suite green)
+  - **PLAN-VS-REVIEW (for user / final review):** reviewer rated Important — `ordinal_encoding.py:48` `np.clip(probs,0,1)` silently breaks sum-to-1 on a *non-monotone* `cum` row (counterexample cum=[[0.1,0.9]] -> clipped sum 1.8, no error/warning). Controller adjudication: DOWNGRADED to Minor in-context — the ONLY producer of `cum` is Task 5 `_corn_cumprobs` = cumprod(sigmoid(logits)), which is structurally monotone non-increasing, so the non-monotone row is unreachable and the clip only squashes ~1e-16 float noise (sum-to-1 holds to float precision). Line is VERBATIM from approved plan (plan line 172), so kept as-is; user decides whether to harden (assert monotonicity, or renormalize-after-clip) in a later pass.
+  - Minor: no per-function docstrings stating the monotone-non-increasing precondition; no regression test for non-monotone/out-of-range `cum`.
+- Task 3: complete (commits 70a2547..3be00c8, review clean; py_compile OK, __init__ empty, soda/__init__ untouched). Controller-verified: all 6 DG domains have train+crossval split files matching DG_DOMAINS; APTOS 2921+741=3662 test count matches plan expectation. Kaggle smoke test deferred to user.
+  - Minor (final review): no `assert target not in sources` guard; `open()` has no explicit encoding; `_read_split` raises bare FileNotFoundError with no context on a missing split file.
 - Task 4: pending
 - Task 5: pending
 - Task 6: pending
