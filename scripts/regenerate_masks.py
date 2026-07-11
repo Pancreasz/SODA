@@ -27,6 +27,7 @@ def main() -> None:
     root = Path(args.images_root)
     out = Path(args.out_root)
     total = 0
+    failed: list[str] = []
     for ds in args.datasets:
         for path in (root / ds).rglob("*"):
             if path.suffix.lower() not in IMG_EXTS:
@@ -34,12 +35,20 @@ def main() -> None:
             rel = path.relative_to(root)
             dst = (out / rel).with_suffix(".png")
             dst.parent.mkdir(parents=True, exist_ok=True)
-            mask = generate_fov_mask(Image.open(path))
-            Image.fromarray(mask).save(dst)
-            total += 1
+            try:
+                with Image.open(path) as im:
+                    mask = generate_fov_mask(im)
+                Image.fromarray(mask).save(dst)
+                total += 1
+            except Exception as exc:  # a bad file must not halt the whole batch
+                failed.append(f"{rel}: {exc}")
+                continue
             if total % 500 == 0:
                 print(f"  {total} masks written...")
     print(f"Done. {total} masks written to {out}")
+    print(f"Failed: {len(failed)}")
+    for f in failed[:20]:
+        print(f"  SKIP {f}")
 
 
 if __name__ == "__main__":

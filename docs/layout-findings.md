@@ -33,3 +33,12 @@ All 8 datasets (APTOS, DDR, DEEPDR, EYEPACS, FGADR, IDRID, MESSIDOR, RLDR) have 
 - **Masks directory**: Not present (expected, may be generated separately)
 
 **Layout verified as correct** — no path reconciliation issues detected. Image files match expected structure relative to dataset root.
+
+## Mask regeneration (Task 6)
+
+Ran `regenerate_masks.py` over the 6 DG datasets (APTOS DEEPDR FGADR IDRID MESSIDOR RLDR):
+- **11,357 masks written, 0 failures** (matches expected 3662+2000+1842+516+1744+1593).
+- All masks are 512x512 (source images are the preprocessed 512x512 GDRBench variant).
+- Coverage spot-check: 0.69-0.79 across a 20-file sample — healthy FOV band (~0.4-0.85 expected).
+- DDR / EYEPACS intentionally skipped (GDRBench convention: no masks needed).
+- CLI hardened with per-image try/except so a corrupt file cannot halt the batch.
