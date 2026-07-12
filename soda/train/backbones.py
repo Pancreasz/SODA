@@ -25,8 +25,9 @@ def build_backbone(name, lora=False, lora_r=8, lora_alpha=16):
         from peft import LoraConfig, get_peft_model
         for p in model.parameters():
             p.requires_grad = False
-        # timm ViT attention linear layers are named 'qkv' and 'proj'
+        # Target ONLY the attention projections. A bare "proj" also matches timm's
+        # patch_embed.proj (Conv2d stem) via peft's endswith rule, so qualify with "attn.".
         cfg = LoraConfig(r=lora_r, lora_alpha=lora_alpha, lora_dropout=0.05,
-                         bias="none", target_modules=["qkv", "proj"])
+                         bias="none", target_modules=["attn.qkv", "attn.proj"])
         model = get_peft_model(model, cfg)
     return model, feat_dim
