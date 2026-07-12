@@ -67,14 +67,16 @@ for name, lora in [("resnet50", False), ("dinov2_vits14", True), ("dinov2_vitb14
     print(name, "feat_dim", d, "out", tuple(out.shape), "trainable%", round(100*tr_/tot, 2))
 # EXPECT feat_dim 2048/384/768; out (2, feat_dim); LoRA trainable% well under 5%.
 
-# >>> Task-4 LoRA target-module check (from the final review — do this) <<<
+# >>> Task-4 LoRA adapter check — which modules ACTUALLY got a LoRA adapter <<<
+# NOTE: check adapter attachment (lora_A present), NOT module names. patch_embed.proj is a
+# permanent part of the architecture and always appears in named_modules() whether or not
+# LoRA touched it — enumerating names would give a false "patch_embed present" every time.
 mB, _ = build_backbone("dinov2_vitb14", lora=True)
-hit = [n for n, _ in mB.named_modules() if n.endswith(("qkv", "proj"))]
-print("LoRA-targeted modules:", hit)
-# If 'patch_embed.proj' appears, LoRA is also adapting the patch-embed stem, not just
-# attention. To claim "LoRA on attention projections only", edit backbones.py
-# target_modules -> ["attn.qkv","attn.proj"] and re-run. Optional: it applies uniformly to
-# DINOv2-ERM and DINOv2+CORN, so it does NOT confound the Phase-1 comparison.
+adapted = [n for n, m in mB.named_modules() if hasattr(m, "lora_A") and len(m.lora_A)]
+print("num LoRA-adapted modules:", len(adapted), "| patch_embed adapted:",
+      any("patch_embed" in n for n in adapted))
+# EXPECT with target_modules=["attn.qkv","attn.proj"]: 24 adapted, patch_embed adapted False.
+# (The earlier bare ["qkv","proj"] wrapped patch_embed.proj too -> 25 adapted; fixed in eeabb67.)
 
 # Task 5 — heads/loss/decode
 from soda.train.heads import SoftmaxHead, CORNHead, compute_loss, predict_class_probs, predict_grade
