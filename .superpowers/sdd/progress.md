@@ -59,5 +59,27 @@ Verdict: READY TO HAND OFF. No Critical/Important defects in the branch.
 - MUST-FIX before Kaggle: none for Task 7 (ResNet gate, no LoRA). For Task 8 (DINOv2), decide the LoRA target_modules over-match at the Task-4 smoke test (tighten to ["attn.qkv","attn.proj"] if patch_embed.proj appears) — optional, doesn't confound the comparison.
 - Deferred to Phase 2 cleanup: unused imports (backbones torch.nn, heads numpy); guards/docstrings; ordinal_encoding clip hardening (Minor, unreachable); data.py encoding/FileNotFound context.
 
-## PHASE 1 STATUS: Tasks 1-6 COMPLETE (code + local verification + reviews). Tasks 7-8 = user's Kaggle step.
+## PHASE 1 STATUS: COMPLETE — Tasks 1-6 code + reviews here; Tasks 7-8 Kaggle DONE by user. Results in results/phase1-*.md. DINOv2+CORN DG-avg AUC 0.8184 / QWK 0.6462. LoRA tightened to attention-only (eeabb67). Pushed to origin @4bc9e5f+.
+
+---
+
+# SODA Phase 2 — Progress Ledger
+
+Plan: D:\fundus\docs\plans\2026-07-14-soda-phase2-alignment-loss.md
+Spec: D:\fundus\docs\specs\2026-07-14-soda-phase2-alignment-loss-design.md
+Base commit at Phase 2 start: ca20faf. Branch main (continues Phase 0/1 convention).
+Scope: DG-only full SODA (alignment loss). Tasks 1-2 local pure-numpy (pytest). Tasks 3-7 Kaggle-only
+torch (py_compile + Kaggle smoke, deferred to user). Tasks 8-9 = Kaggle dev-gate + 18-run sweep = user's step.
+Pre-flight scan clean (bank-sizing bug + tidy-ups already fixed in plan during write-plans self-review;
+numpy-oracle/torch-mirror duplication is the intentional local-testability pattern, parity-checked on Kaggle).
+
+- Task 1 (alignment loss numpy oracle): pending
+- Task 2 (domain-balanced sampler): pending
+- Task 3 (style-aug bank): pending
+- Task 4 (torch alignment module): pending
+- Task 5 (data: style view + sampler): pending
+- Task 6 (checkpoint save/load): pending
+- Task 7 (SODA engine + CLI): pending
+- Task 8 (Kaggle dev gate): user-run, not executed here
+- Task 9 (Kaggle 18-run ablation): user-run, not executed here
 Next action (user): run Kaggle Tasks 7 (ResNet-50 ERM validation gate on APTOS, expect AUC ~0.75) then 8 (DINOv2-ERM + DINOv2+CORN DG sweep). Kaggle handoff checklist + runbook prepared. See soda/kaggle/reproduce_baselines.md and results/ (to be filled by the Kaggle runs).
