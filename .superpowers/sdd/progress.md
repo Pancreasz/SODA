@@ -81,7 +81,8 @@ numpy-oracle/torch-mirror duplication is the intentional local-testability patte
   - Minor (final review): IMAGENET_MEAN/STD duplicated from data.py (drift risk; could import); uses stdlib `random` not torch-seeded (reproducibility note).
 - Task 4 (torch alignment module): complete (commits eee693b..221a8f2, py_compile OK, isolation intact; review Approved — torch↔oracle parity verified function-by-function, differentiable-proto/detached-bank/no-grad-update semantics correct). Kaggle parity check deferred.
   - Minor (final review): loss fns require domains/grades on same device as z/s (Task 7 already .to(device)'s them — confirm); per-cell .unique()/bool() forces GPU-CPU syncs (perf, mirrors oracle); no fn docstrings; PrototypeBank not persisted (separate from net, rebuilt per run — momentum-not-buffer is moot).
-- Task 5 (data: style view + sampler): pending
+- Task 5 (data: style view + sampler): complete (commits 221a8f2..bad8f5e, py_compile OK, isolation intact; review Approved — batch_sampler DataLoader call conflict-free, build_loaders back-compat verified, no import cycle). Kaggle smoke deferred.
+  - Minor (final review): `DomainBatchSampler.__len__` reseeds without epoch offset -> batch count can vary per epoch, so len(train_loader) may be slightly off (progress-bar only, not correctness — Task 7 iterates loader directly); __len__ recompute perf; param name shadows domain_of_index method (cosmetic).
 - Task 6 (checkpoint save/load): pending
 - Task 7 (SODA engine + CLI): pending
 - Task 8 (Kaggle dev gate): user-run, not executed here
