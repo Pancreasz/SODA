@@ -79,7 +79,8 @@ numpy-oracle/torch-mirror duplication is the intentional local-testability patte
   - Minor (final review): unused `from __future__ import annotations`; no function docstring; uniform domain choice can leave large-pool domains' data underused per epoch (spec-consistent, tuning note).
 - Task 3 (style-aug bank): complete (commits 2992f65..eee693b, py_compile OK, isolation intact; review Approved, normalization cross-checked vs _eval_tf, grade-preserving confirmed). Kaggle smoke deferred.
   - Minor (final review): IMAGENET_MEAN/STD duplicated from data.py (drift risk; could import); uses stdlib `random` not torch-seeded (reproducibility note).
-- Task 4 (torch alignment module): pending
+- Task 4 (torch alignment module): complete (commits eee693b..221a8f2, py_compile OK, isolation intact; review Approved — torch↔oracle parity verified function-by-function, differentiable-proto/detached-bank/no-grad-update semantics correct). Kaggle parity check deferred.
+  - Minor (final review): loss fns require domains/grades on same device as z/s (Task 7 already .to(device)'s them — confirm); per-cell .unique()/bool() forces GPU-CPU syncs (perf, mirrors oracle); no fn docstrings; PrototypeBank not persisted (separate from net, rebuilt per run — momentum-not-buffer is moot).
 - Task 5 (data: style view + sampler): pending
 - Task 6 (checkpoint save/load): pending
 - Task 7 (SODA engine + CLI): pending
