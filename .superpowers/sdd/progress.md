@@ -83,8 +83,21 @@ numpy-oracle/torch-mirror duplication is the intentional local-testability patte
   - Minor (final review): loss fns require domains/grades on same device as z/s (Task 7 already .to(device)'s them — confirm); per-cell .unique()/bool() forces GPU-CPU syncs (perf, mirrors oracle); no fn docstrings; PrototypeBank not persisted (separate from net, rebuilt per run — momentum-not-buffer is moot).
 - Task 5 (data: style view + sampler): complete (commits 221a8f2..bad8f5e, py_compile OK, isolation intact; review Approved — batch_sampler DataLoader call conflict-free, build_loaders back-compat verified, no import cycle). Kaggle smoke deferred.
   - Minor (final review): `DomainBatchSampler.__len__` reseeds without epoch offset -> batch count can vary per epoch, so len(train_loader) may be slightly off (progress-bar only, not correctness — Task 7 iterates loader directly); __len__ recompute perf; param name shadows domain_of_index method (cosmetic).
-- Task 6 (checkpoint save/load): pending
-- Task 7 (SODA engine + CLI): pending
+- Task 6 (checkpoint save/load): complete (commits bad8f5e..3cfdf94, py_compile OK, isolation intact; review Approved — trainable-key filter + strict=False correct). Kaggle round-trip deferred.
+  - Minor (final review): buffers excluded from checkpoint (intentional — bank not part of net, rebuilt per run); strict=False silent on renamed keys (note for factory refactors); torch.load weights_only default fine (config is plain primitives) — confirm in Kaggle round-trip.
+- Task 7 (SODA engine + CLI): complete (commits 3cfdf94..ed85d96, py_compile OK, isolation intact, Phase-1 train_and_eval unchanged; review Approved — device handling, bank sizing=len(sources)=5, loss gating/scaling, warmup/ramp, bank-update timing, dispatch all verified).
+  - **PHASE-3 MUST-REVISIT (plan-mandated, out-of-scope for Phase 2):** `engine.py` train_and_eval_soda hardcodes `build_backbone(lora=True)`, ignoring --lora. SODA + `--backbone resnet50` would crash (peft finds no attn.qkv/attn.proj on ResNet). NOT hit in Phase 2 (all SODA runs are dinov2_vitb14 --lora). Phase 3's SODA-on-ResNet control MUST revisit this (respect --lora / full-finetune ResNet path). Runbook must note: Phase 2 SODA = DINOv2 only.
+  - Minor (final review): _eval_soda omits qwk_ci (ERM JSONs have it, SODA don't — schema diff; Task 9 parsing reads auc/qwk/cat/mae so fine); --batch-size unused for SODA runs (dead knob, build_align_loaders derives bs=domains_per_batch*per_domain); L_consist adds a 2nd backbone forward/step (perf, expected).
 - Task 8 (Kaggle dev gate): user-run, not executed here
 - Task 9 (Kaggle 18-run ablation): user-run, not executed here
+
+## Final whole-branch review (ca20faf..ed85d96) — done inline (opus session-capped)
+Verdict: READY TO HAND OFF to Kaggle dev gate. No Critical/Important defects in-branch.
+- 28/28 local tests green; all 8 torch modules py_compile clean; isolation intact (soda/__init__ torch-free, train/__init__ 0 bytes).
+- Cross-module coherence verified: numpy-oracle↔torch-mirror parity (Kaggle-checked), sampler chain (guarded), data 4-tuple/3-tuple shapes, engine wiring, num_domains=len(sources)=5, back-compat (Phase-1 build_loaders/train_and_eval untouched).
+- Invariants: device handling, differentiable-proto/detached-bank/no-grad-update, loss gating+λ-scaling+warmup/ramp, best-val restore.
+- MUST-VERIFY on Kaggle (by design): Task 4 torch↔oracle parity; Task 5 batch composition (4 distinct domains); Task 6 checkpoint round-trip; Task 8 dev gate = full-SODA stable + λ setting beats CORN baseline (QWK 0.8596 / cat 0.0431 on APTOS) without AUC collapse.
+- Phase-3 must-revisit: lora=True hardcode (SODA+ResNet crash — Phase 2 never runs it).
+
+## PHASE 2 STATUS: Tasks 1-7 COMPLETE (code + local verification + reviews). Tasks 8-9 = user's Kaggle step (dev gate + 18-run ablation ladder). Runbook: soda/kaggle/phase2_runbook.md.
 Next action (user): run Kaggle Tasks 7 (ResNet-50 ERM validation gate on APTOS, expect AUC ~0.75) then 8 (DINOv2-ERM + DINOv2+CORN DG sweep). Kaggle handoff checklist + runbook prepared. See soda/kaggle/reproduce_baselines.md and results/ (to be filled by the Kaggle runs).
