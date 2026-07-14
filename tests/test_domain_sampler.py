@@ -1,5 +1,7 @@
 from soda.domain_sampler import domain_balanced_batches
 
+import pytest
+
 
 def test_batches_have_right_size_and_span_domains():
     # 3 domains, 8 indices each = 24 indices
@@ -27,3 +29,10 @@ def test_deterministic_under_seed():
     a = domain_balanced_batches(doi, 3, 2, seed=42)
     b = domain_balanced_batches(doi, 3, 2, seed=42)
     assert a == b
+
+
+def test_degenerate_inputs_raise():
+    with pytest.raises(ValueError):
+        domain_balanced_batches([0, 0, 1, 1], domains_per_batch=0, per_domain=2, seed=0)
+    with pytest.raises(ValueError):
+        domain_balanced_batches([0, 0, 1, 1], domains_per_batch=2, per_domain=0, seed=0)

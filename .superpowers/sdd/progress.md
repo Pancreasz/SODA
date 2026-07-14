@@ -73,7 +73,8 @@ torch (py_compile + Kaggle smoke, deferred to user). Tasks 8-9 = Kaggle dev-gate
 Pre-flight scan clean (bank-sizing bug + tidy-ups already fixed in plan during write-plans self-review;
 numpy-oracle/torch-mirror duplication is the intentional local-testability pattern, parity-checked on Kaggle).
 
-- Task 1 (alignment loss numpy oracle): pending
+- Task 1 (alignment loss numpy oracle): complete (commits ca20faf..8a69644, 24/24 suite; review Approved, math hand-verified vs corn_severity oracle)
+  - Minor (final review): `_sigmoid` no overflow guard (exp(-x) can warn on large negatives; result still correct); tests don't exercise multi-partner/multi-cell averaging (Kaggle parity check will).
 - Task 2 (domain-balanced sampler): pending
 - Task 3 (style-aug bank): pending
 - Task 4 (torch alignment module): pending

@@ -11,6 +11,8 @@ from collections import defaultdict
 
 
 def domain_balanced_batches(domain_of_index, domains_per_batch, per_domain, seed=0):
+    if per_domain < 1 or domains_per_batch < 1:
+        raise ValueError("per_domain and domains_per_batch must be >= 1")
     rng = random.Random(seed)
     by_domain = defaultdict(list)
     for idx, dom in enumerate(domain_of_index):
