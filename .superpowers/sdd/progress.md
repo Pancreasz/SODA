@@ -75,8 +75,10 @@ numpy-oracle/torch-mirror duplication is the intentional local-testability patte
 
 - Task 1 (alignment loss numpy oracle): complete (commits ca20faf..8a69644, 24/24 suite; review Approved, math hand-verified vs corn_severity oracle)
   - Minor (final review): `_sigmoid` no overflow guard (exp(-x) can warn on large negatives; result still correct); tests don't exercise multi-partner/multi-cell averaging (Kaggle parity check will).
-- Task 2 (domain-balanced sampler): pending
-- Task 3 (style-aug bank): pending
+- Task 2 (domain-balanced sampler): complete (commits 8a69644..ce5019e + fix 2992f65, 28/28 suite; review Approved). Fix: added ValueError guard for per_domain/domains_per_batch < 1 (was silent infinite loop) + regression test.
+  - Minor (final review): unused `from __future__ import annotations`; no function docstring; uniform domain choice can leave large-pool domains' data underused per epoch (spec-consistent, tuning note).
+- Task 3 (style-aug bank): complete (commits 2992f65..eee693b, py_compile OK, isolation intact; review Approved, normalization cross-checked vs _eval_tf, grade-preserving confirmed). Kaggle smoke deferred.
+  - Minor (final review): IMAGENET_MEAN/STD duplicated from data.py (drift risk; could import); uses stdlib `random` not torch-seeded (reproducibility note).
 - Task 4 (torch alignment module): pending
 - Task 5 (data: style view + sampler): pending
 - Task 6 (checkpoint save/load): pending
